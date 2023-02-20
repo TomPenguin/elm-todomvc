@@ -1,8 +1,10 @@
 {
   "scripts": {
+    "build": "elm make src/Main.elm",
     "lint": "elm-format --yes"
   },
   "devDependencies": {
+    "elm": "^0.19.1-5",
     "elm-format": "^0.8.5"
   }
 }
