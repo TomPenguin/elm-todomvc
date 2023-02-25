@@ -2,8 +2,8 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html.Attributes exposing (style, value)
+import Html.Events as Events
 import Html.Keyed as Keyed
 
 
@@ -97,16 +97,32 @@ subscriptions _ =
     Sub.none
 
 
+
+-- VIEW
+
+
 view : Model -> Browser.Document Msg
 view model =
     { title = "Elm・TodoMVC"
     , body =
-        [ h1 [] [ text "todo" ]
-        , div []
-            [ input [ value model.input, onInput Input ] []
-            , button [ onClick AddTodo ] [ text "add" ]
+        [ main_ []
+            [ section [ style "margin" "4rem auto", style "width" "30rem" ]
+                [ h1
+                    [ style "text-align" "center"
+                    , style "font-weight" "100"
+                    , style "font-size" "6rem"
+                    , style "color" "rgba(175, 47, 47, 0.15)"
+                    ]
+                    [ text "todos" ]
+                , section []
+                    [ div []
+                        [ input [ value model.input, Events.onInput Input ] []
+                        , button [ Events.onClick AddTodo ] [ text "add" ]
+                        ]
+                    , viewTodos model.todos
+                    ]
+                ]
             ]
-        , viewTodos model.todos
         ]
     }
 
@@ -121,13 +137,13 @@ viewTodo idx todo =
     ( String.fromInt idx
     , li []
         [ viewTodoText todo
-        , button [ onClick (ToggleTodo idx) ]
+        , button [ Events.onClick (ToggleTodo idx) ]
             [ text
                 (if todo.completed then
-                    "undone"
+                    "incomplete"
 
                  else
-                    "done"
+                    "complete"
                 )
             ]
         ]

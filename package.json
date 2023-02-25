@@ -1,10 +1,12 @@
 {
   "scripts": {
-    "build": "elm make src/Main.elm",
+    "dev": "elm-live src/Main.elm -- --output=elm.js",
+    "build": "elm make src/Main.elm --output elm.js",
     "lint": "elm-format --yes"
   },
   "devDependencies": {
     "elm": "^0.19.1-5",
-    "elm-format": "^0.8.5"
+    "elm-format": "^0.8.5",
+    "elm-live": "^4.0.2"
   }
 }
