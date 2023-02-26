@@ -112,8 +112,8 @@ view model =
     { title = "Elm・TodoMVC"
     , body =
         [ main_ []
-            [ section [ Attr.class "container"]
-                [ h1 [ Attr.class "heading" ][ text "todos" ]
+            [ section [ Attr.class "container" ]
+                [ h1 [ Attr.class "heading" ] [ text "todos" ]
                 , section
                     [ Attr.class "card" ]
                     [ div []
@@ -144,16 +144,13 @@ viewItem : Int -> Todo -> ( String, Html Msg )
 viewItem idx todo =
     ( String.fromInt idx
     , li []
-        [ viewTodoText todo
-        , button [ Events.onClick (ToggleTodo idx) ]
-            [ text
-                (if todo.completed then
-                    "incomplete"
-
-                 else
-                    "complete"
-                )
+        [ input
+            [ Attr.type_ "checkbox"
+            , Attr.checked todo.completed
+            , Events.onClick (ToggleTodo idx)
             ]
+            []
+        , viewTodoText todo
         ]
     )
 
