@@ -37,15 +37,62 @@ body {
   font-style: italic;
 }
 
-.list {
+.todos {
   list-style: none;
   font-size: 1.6rem;
+  padding: 0 3rem;
 }
 
-.list__item > label {
+.todos__todo {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.list__item--completed {
+.todos__todo > label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.todos__todo--completed {
   text-decoration: line-through;
+}
+
+.delete {
+  visibility: hidden;
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.delete::before,
+.delete::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 1rem;
+  background: rgba(175, 47, 47, 0.3);
+}
+
+.delete:hover::before,
+.delete:hover::after {
+  background: rgba(175, 47, 47, 0.6);
+}
+
+.delete::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.delete::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.todos__todo:hover .delete {
+  visibility: visible;
 }

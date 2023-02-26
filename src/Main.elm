@@ -18,6 +18,10 @@ main =
         }
 
 
+
+-- MODEL
+
+
 type alias Todo =
     { text : String
     , completed : Bool
@@ -49,17 +53,15 @@ init _ =
     ( Model "" [], Cmd.none )
 
 
+
+-- UPDATE
+
+
 type Msg
     = Input String
     | KeyPress Int
     | ToggleTodo Int
-
-
-
--- | UpdateTodo Text Id
--- | DeleteTodo Id
--- | ClearCompleted
--- | SwitchTab Tab
+    | DeleteTodo Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -78,6 +80,9 @@ update msg model =
 
         ToggleTodo id ->
             ( { model | todos = toggleTodo model.todos id }, Cmd.none )
+
+        DeleteTodo id ->
+            ( { model | todos = deletedTodos model.todos id }, Cmd.none )
 
 
 addedTodos : List Todo -> Text -> List Todo
@@ -98,6 +103,14 @@ toggleTodo todos id =
             )
 
 
+deletedTodos : List Todo -> Int -> List Todo
+deletedTodos todos id =
+    todos
+        |> List.indexedMap Tuple.pair
+        |> List.filter (\( idx, _ ) -> idx /= id)
+        |> List.map Tuple.second
+
+
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
@@ -116,18 +129,9 @@ view model =
                 [ h1 [ Attr.class "heading" ] [ text "todos" ]
                 , section
                     [ Attr.class "card" ]
-                    [ div []
-                        [ input
-                            [ Attr.class "input"
-                            , Attr.value model.input
-                            , Attr.placeholder "What needs to be done?"
-                            , Attr.autofocus True
-                            , Events.onInput Input
-                            , onKeyPress KeyPress
-                            ]
-                            []
-                        ]
-                    , viewList model.todos
+                    [ viewHeader model.input
+                    , viewTodos model.todos
+                    , viewFooter model.todos
                     ]
                 ]
             ]
@@ -135,15 +139,30 @@ view model =
     }
 
 
-viewList : List Todo -> Html Msg
-viewList todos =
-    Keyed.node "ul" [ Attr.class "list" ] (List.indexedMap viewItem todos)
+viewHeader : String -> Html Msg
+viewHeader inputText =
+    header []
+        [ input
+            [ Attr.class "input"
+            , Attr.value inputText
+            , Attr.placeholder "What needs to be done?"
+            , Attr.autofocus True
+            , Events.onInput Input
+            , onKeyPress KeyPress
+            ]
+            []
+        ]
 
 
-viewItem : Int -> Todo -> ( String, Html Msg )
-viewItem idx todo =
+viewTodos : List Todo -> Html Msg
+viewTodos todos =
+    Keyed.node "ul" [ Attr.class "todos" ] (List.indexedMap viewTodo todos)
+
+
+viewTodo : Int -> Todo -> ( String, Html Msg )
+viewTodo idx todo =
     ( String.fromInt idx
-    , li [ Attr.class "list__item" ]
+    , li [ Attr.class "todos__todo" ]
         [ label []
             [ input
                 [ Attr.type_ "checkbox"
@@ -153,15 +172,32 @@ viewItem idx todo =
                 []
             , p
                 (if todo.completed then
-                    [ Attr.class "list__item", Attr.class "list__item--completed" ]
+                    [ Attr.class "todos__todo", Attr.class "todos__todo--completed" ]
 
                  else
-                    [ Attr.class "list__item" ]
+                    [ Attr.class "todos__todo" ]
                 )
                 [ text todo.text ]
             ]
+        , button [ Attr.class "delete", Events.onClick (DeleteTodo idx) ] []
         ]
     )
+
+
+viewFooter : List Todo -> Html Msg
+viewFooter todos =
+    footer []
+        [ span []
+            [ text
+                ((todos
+                    |> List.filter (\todo -> not todo.completed)
+                    |> List.length
+                    |> String.fromInt
+                 )
+                    ++ " items left"
+                )
+            ]
+        ]
 
 
 onKeyPress : (Int -> msg) -> Attribute msg
