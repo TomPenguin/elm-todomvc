@@ -2,9 +2,10 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (style, value)
-import Html.Events as Events
+import Html.Attributes exposing (autofocus, placeholder, style, value)
+import Html.Events as Events exposing (keyCode)
 import Html.Keyed as Keyed
+import Json.Decode
 
 
 main : Program () Model Msg
@@ -50,7 +51,7 @@ init _ =
 
 type Msg
     = Input String
-    | AddTodo
+    | KeyPress Int
     | ToggleTodo Int
 
 
@@ -67,8 +68,13 @@ update msg model =
         Input text ->
             ( { model | input = text }, Cmd.none )
 
-        AddTodo ->
-            ( { model | todos = addedTodos model.todos model.input, input = "" }, Cmd.none )
+        KeyPress keyCode ->
+            case keyCode of
+                13 ->
+                    ( { model | todos = addedTodos model.todos model.input, input = "" }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         ToggleTodo id ->
             ( { model | todos = toggleTodo model.todos id }, Cmd.none )
@@ -106,7 +112,7 @@ view model =
     { title = "Elm・TodoMVC"
     , body =
         [ main_ []
-            [ section [ style "margin" "4rem auto", style "width" "30rem" ]
+            [ section [ style "margin" "4rem auto", style "width" "36rem" ]
                 [ h1
                     [ style "text-align" "center"
                     , style "font-weight" "100"
@@ -114,10 +120,19 @@ view model =
                     , style "color" "rgba(175, 47, 47, 0.15)"
                     ]
                     [ text "todos" ]
-                , section []
+                , section
+                    [ style "background" "#fff"
+                    , style "box-shadow" "0 2px 4px 0 rgb(0 0 0 / 20%), 0 25px 50px 0 rgb(0 0 0 / 10%)"
+                    ]
                     [ div []
-                        [ input [ value model.input, Events.onInput Input ] []
-                        , button [ Events.onClick AddTodo ] [ text "add" ]
+                        [ input
+                            [ value model.input
+                            , placeholder "What needs to be done?"
+                            , autofocus True
+                            , Events.onInput Input
+                            , onKeyPress KeyPress
+                            ]
+                            []
                         ]
                     , viewTodos model.todos
                     ]
@@ -157,3 +172,8 @@ viewTodoText todo =
 
     else
         p [] [ text todo.text ]
+
+
+onKeyPress : (Int -> msg) -> Attribute msg
+onKeyPress tagger =
+    Events.on "keypress" <| Json.Decode.map tagger Events.keyCode
