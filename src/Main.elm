@@ -137,31 +137,31 @@ view model =
 
 viewList : List Todo -> Html Msg
 viewList todos =
-    Keyed.node "ul" [] (List.indexedMap viewItem todos)
+    Keyed.node "ul" [ Attr.class "list" ] (List.indexedMap viewItem todos)
 
 
 viewItem : Int -> Todo -> ( String, Html Msg )
 viewItem idx todo =
     ( String.fromInt idx
-    , li []
-        [ input
-            [ Attr.type_ "checkbox"
-            , Attr.checked todo.completed
-            , Events.onClick (ToggleTodo idx)
+    , li [ Attr.class "list__item" ]
+        [ label []
+            [ input
+                [ Attr.type_ "checkbox"
+                , Attr.checked todo.completed
+                , Events.onClick (ToggleTodo idx)
+                ]
+                []
+            , p
+                (if todo.completed then
+                    [ Attr.class "list__item", Attr.class "list__item--completed" ]
+
+                 else
+                    [ Attr.class "list__item" ]
+                )
+                [ text todo.text ]
             ]
-            []
-        , viewTodoText todo
         ]
     )
-
-
-viewTodoText : Todo -> Html Msg
-viewTodoText todo =
-    if todo.completed then
-        p [ Attr.class "list__item", Attr.class "list__item--completed" ] [ text todo.text ]
-
-    else
-        p [ Attr.class "list__item" ] [ text todo.text ]
 
 
 onKeyPress : (Int -> msg) -> Attribute msg

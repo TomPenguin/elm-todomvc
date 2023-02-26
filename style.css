@@ -4,6 +4,8 @@ body {
   background: #f5f5f5;
   font: 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: rgb(77, 77, 77);
+  line-height: 1.6;
+  font-weight: 100;
 }
 
 .container {
@@ -13,9 +15,9 @@ body {
 
 .heading {
   text-align: center;
-  font-weight: 100;
   font-size: 6rem;
   color: rgba(175, 47, 47, 0.15);
+  font-weight: inherit;
 }
 
 .card {
@@ -29,11 +31,19 @@ body {
   outline: 0;
   border: 0;
   font-size: 1.6rem;
-  font-weight: 100;
 }
 
 .input::placeholder {
   font-style: italic;
+}
+
+.list {
+  list-style: none;
+  font-size: 1.6rem;
+}
+
+.list__item > label {
+  display: flex;
 }
 
 .list__item--completed {
