@@ -127,7 +127,7 @@ view model =
                             ]
                             []
                         ]
-                    , viewTodos model.todos
+                    , viewList model.todos
                     ]
                 ]
             ]
@@ -135,13 +135,13 @@ view model =
     }
 
 
-viewTodos : List Todo -> Html Msg
-viewTodos todos =
-    Keyed.node "ul" [] (List.indexedMap viewTodo todos)
+viewList : List Todo -> Html Msg
+viewList todos =
+    Keyed.node "ul" [] (List.indexedMap viewItem todos)
 
 
-viewTodo : Int -> Todo -> ( String, Html Msg )
-viewTodo idx todo =
+viewItem : Int -> Todo -> ( String, Html Msg )
+viewItem idx todo =
     ( String.fromInt idx
     , li []
         [ viewTodoText todo
