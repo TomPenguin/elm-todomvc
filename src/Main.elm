@@ -31,6 +31,7 @@ type alias Todo =
 type alias Model =
     { input : String
     , todos : List Todo
+    , activeTab : Tab
     }
 
 
@@ -42,15 +43,9 @@ type alias Id =
     Int
 
 
-type Tab
-    = AllTab
-    | ActiveTab
-    | CompletedTab
-
-
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model "" [], Cmd.none )
+    ( Model "" [] AllTab, Cmd.none )
 
 
 
@@ -62,6 +57,14 @@ type Msg
     | KeyPress Int
     | ToggleTodo Int
     | DeleteTodo Int
+    | SwitchTab Tab
+    | ClearCompleted
+
+
+type Tab
+    = AllTab
+    | ActiveTab
+    | CompletedTab
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -83,6 +86,12 @@ update msg model =
 
         DeleteTodo id ->
             ( { model | todos = deletedTodos model.todos id }, Cmd.none )
+
+        SwitchTab tab ->
+            ( { model | activeTab = tab }, Cmd.none )
+
+        ClearCompleted ->
+            ( { model | todos = notCompletedTodos model.todos }, Cmd.none )
 
 
 addedTodos : List Todo -> Text -> List Todo
@@ -130,8 +139,8 @@ view model =
                 , section
                     [ Attr.class "card" ]
                     [ viewHeader model.input
-                    , viewTodos model.todos
-                    , viewFooter model.todos
+                    , viewTodos model
+                    , viewFooter model
                     ]
                 ]
             ]
@@ -154,9 +163,23 @@ viewHeader inputText =
         ]
 
 
-viewTodos : List Todo -> Html Msg
-viewTodos todos =
-    Keyed.node "ul" [ Attr.class "todos" ] (List.indexedMap viewTodo todos)
+viewTodos : Model -> Html Msg
+viewTodos model =
+    Keyed.node "ul"
+        [ Attr.class "todos" ]
+        (model.todos
+            |> (case model.activeTab of
+                    AllTab ->
+                        identity
+
+                    ActiveTab ->
+                        notCompletedTodos
+
+                    CompletedTab ->
+                        completedTodos
+               )
+            |> List.indexedMap viewTodo
+        )
 
 
 viewTodo : Int -> Todo -> ( String, Html Msg )
@@ -179,27 +202,67 @@ viewTodo idx todo =
                 )
                 [ text todo.text ]
             ]
-        , button [ Attr.class "delete", Events.onClick (DeleteTodo idx) ] []
+        , viewButton "delete" "" False (DeleteTodo idx)
         ]
     )
 
 
-viewFooter : List Todo -> Html Msg
-viewFooter todos =
-    footer []
+viewFooter : Model -> Html Msg
+viewFooter model =
+    footer [ Attr.class "footer" ]
         [ span []
-            [ text
-                ((todos
-                    |> List.filter (\todo -> not todo.completed)
-                    |> List.length
-                    |> String.fromInt
-                 )
-                    ++ " items left"
-                )
+            [ text ((notCompletedSize model.todos |> String.fromInt) ++ " items left") ]
+        , span [ Attr.class "tabs" ]
+            [ viewButton "tab" "All" (model.activeTab == AllTab) (SwitchTab AllTab)
+            , viewButton "tab" "Active" (model.activeTab == ActiveTab) (SwitchTab ActiveTab)
+            , viewButton "tab" "Completed" (model.activeTab == CompletedTab) (SwitchTab CompletedTab)
+            ]
+        , span []
+            [ let
+                label =
+                    if completedSize model.todos > 0 then
+                        "Clear completed(" ++ String.fromInt (completedSize model.todos) ++ ")"
+
+                    else
+                        ""
+              in
+              viewButton "clear" label False ClearCompleted
             ]
         ]
+
+
+viewButton : String -> String -> Bool -> msg -> Html msg
+viewButton class label active msg =
+    button
+        (if active then
+            [ Attr.class "btn", Attr.class "btn--active", Attr.class class, Events.onClick msg ]
+
+         else
+            [ Attr.class "btn", Attr.class class, Events.onClick msg ]
+        )
+        [ text label ]
 
 
 onKeyPress : (Int -> msg) -> Attribute msg
 onKeyPress tagger =
     Events.on "keypress" <| Json.Decode.map tagger Events.keyCode
+
+
+completedTodos : List Todo -> List Todo
+completedTodos =
+    List.filter .completed
+
+
+notCompletedTodos : List Todo -> List Todo
+notCompletedTodos =
+    List.filter (.completed >> not)
+
+
+completedSize : List Todo -> Int
+completedSize =
+    completedTodos >> List.length
+
+
+notCompletedSize : List Todo -> Int
+notCompletedSize todos =
+    List.length todos - completedSize todos

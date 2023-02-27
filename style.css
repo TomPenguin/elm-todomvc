@@ -16,7 +16,7 @@ body {
 .heading {
   text-align: center;
   font-size: 6rem;
-  color: rgba(175, 47, 47, 0.15);
+  color: rgba(175, 47, 47, 0.3);
   font-weight: inherit;
 }
 
@@ -59,18 +59,30 @@ body {
   text-decoration: line-through;
 }
 
-.delete {
+.footer {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr;
+  padding: 0.5rem 1rem;
+}
+
+.btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+}
+
+.btn.delete {
   visibility: hidden;
   position: relative;
   width: 2rem;
   height: 2rem;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
 }
 
-.delete::before,
-.delete::after {
+.btn.delete::before,
+.btn.delete::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -80,17 +92,31 @@ body {
   background: rgba(175, 47, 47, 0.3);
 }
 
-.delete:hover::before,
-.delete:hover::after {
+.btn.delete:hover::before,
+.btn.delete:hover::after {
   background: rgba(175, 47, 47, 0.6);
 }
 
-.delete::before {
+.btn.delete::before {
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-.delete::after {
+.btn.delete::after {
   transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.btn.tab {
+  border-radius: 3px;
+  border: 1px solid transparent;
+  margin: 0 0.2rem;
+}
+
+.btn.tab.btn--active {
+  border: 1px solid rgba(175, 47, 47, 0.3);
+}
+
+.btn.tab:not(.btn--active):hover {
+  border: 1px solid rgba(175, 47, 47, 0.15);
 }
 
 .todos__todo:hover .delete {
