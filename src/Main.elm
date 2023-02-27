@@ -57,6 +57,7 @@ type Msg
     | KeyPress Int
     | ToggleTodo Int
     | DeleteTodo Int
+    | ToggleAll
     | SwitchTab Tab
     | ClearCompleted
 
@@ -87,6 +88,9 @@ update msg model =
         DeleteTodo id ->
             ( { model | todos = deletedTodos model.todos id }, Cmd.none )
 
+        ToggleAll ->
+            ( { model | todos = toggleAll model.todos }, Cmd.none )
+
         SwitchTab tab ->
             ( { model | activeTab = tab }, Cmd.none )
 
@@ -110,6 +114,12 @@ toggleTodo todos id =
                 else
                     todo
             )
+
+
+toggleAll : List Todo -> List Todo
+toggleAll todos =
+    todos
+        |> List.map (\todo -> { todo | completed = List.length todos /= completedSize todos })
 
 
 deletedTodos : List Todo -> Int -> List Todo
@@ -138,7 +148,7 @@ view model =
                 [ h1 [ Attr.class "heading" ] [ text "todos" ]
                 , section
                     [ Attr.class "card" ]
-                    [ viewHeader model.input
+                    [ viewHeader model
                     , viewTodos model
                     , viewFooter model
                     ]
@@ -148,12 +158,17 @@ view model =
     }
 
 
-viewHeader : String -> Html Msg
-viewHeader inputText =
-    header []
-        [ input
+viewHeader : Model -> Html Msg
+viewHeader model =
+    header [ Attr.class "header" ]
+        [ viewCheckbox
+            { class = "toggle-all"
+            , checked = List.length model.todos > 0 && List.length model.todos == completedSize model.todos
+            , msg = ToggleAll
+            }
+        , input
             [ Attr.class "input"
-            , Attr.value inputText
+            , Attr.value model.input
             , Attr.placeholder "What needs to be done?"
             , Attr.autofocus True
             , Events.onInput Input
@@ -186,19 +201,14 @@ viewTodo : Int -> Todo -> ( String, Html Msg )
 viewTodo idx todo =
     ( String.fromInt idx
     , li [ Attr.class "todos__todo" ]
-        [ label []
-            [ input
-                [ Attr.type_ "checkbox"
-                , Attr.checked todo.completed
-                , Events.onClick (ToggleTodo idx)
-                ]
-                []
+        [ label [ Attr.class "todos__label" ]
+            [ viewCheckbox { class = "", checked = todo.completed, msg = ToggleTodo idx }
             , p
                 (if todo.completed then
-                    [ Attr.class "todos__todo", Attr.class "todos__todo--completed" ]
+                    [ Attr.class "todos__text", Attr.class "todos__todo--completed" ]
 
                  else
-                    [ Attr.class "todos__todo" ]
+                    [ Attr.class "todos__text" ]
                 )
                 [ text todo.text ]
             ]
@@ -212,12 +222,12 @@ viewFooter model =
     footer [ Attr.class "footer" ]
         [ span []
             [ text ((notCompletedSize model.todos |> String.fromInt) ++ " items left") ]
-        , span [ Attr.class "tabs" ]
+        , span [ Attr.class "tabs-pane" ]
             [ viewButton "tab" "All" (model.activeTab == AllTab) (SwitchTab AllTab)
             , viewButton "tab" "Active" (model.activeTab == ActiveTab) (SwitchTab ActiveTab)
             , viewButton "tab" "Completed" (model.activeTab == CompletedTab) (SwitchTab CompletedTab)
             ]
-        , span []
+        , span [Attr.class "clear-pane"]
             [ let
                 label =
                     if completedSize model.todos > 0 then
@@ -228,6 +238,30 @@ viewFooter model =
               in
               viewButton "clear" label False ClearCompleted
             ]
+        ]
+
+
+viewCheckbox : { class : String, checked : Bool, msg : msg } -> Html msg
+viewCheckbox options =
+    label
+        (if options.checked then
+            [ Attr.class "checkbox"
+            , Attr.class "checkbox--checked"
+            , Attr.class options.class
+            ]
+
+         else
+            [ Attr.class "checkbox"
+            , Attr.class options.class
+            ]
+        )
+        [ input
+            [ Attr.class "checkbox__input"
+            , Attr.type_ "checkbox"
+            , Attr.checked options.checked
+            , Events.onClick options.msg
+            ]
+            []
         ]
 
 
